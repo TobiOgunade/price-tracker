@@ -2,39 +2,51 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
 let products = [
   { id: 1, name: "iPhone 15", price: 999 },
   { id: 2, name: "MacBook Air", price: 1299 },
-  { id: 3, name: "AirPods Pro", price: 249 }
+  { id: 3, name: "AirPods Pro", price: 249 },
 ];
 
-// GET all products
+app.get("/", (req, res) => {
+  res.send("Smart Price Tracker API is running");
+});
+
 app.get("/api/products", (req, res) => {
   res.json(products);
 });
 
-// ADD product
 app.post("/api/products", (req, res) => {
+  const { name, price } = req.body;
+
+  if (!name || price === undefined) {
+    return res.status(400).json({ message: "Name and price are required" });
+  }
+
   const newProduct = {
     id: Date.now(),
-    name: req.body.name,
-    price: req.body.price
+    name,
+    price: Number(price),
   };
 
   products.push(newProduct);
-  res.json(newProduct);
+  res.status(201).json(newProduct);
 });
 
-// DELETE product
 app.delete("/api/products/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  products = products.filter((p) => p.id !== id);
-  res.json({ message: "Deleted successfully" });
+  const id = Number(req.params.id);
+
+  products = products.filter((product) => product.id !== id);
+
+  res.json({ message: "Product deleted successfully" });
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
